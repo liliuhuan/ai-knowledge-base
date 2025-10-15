@@ -1,0 +1,35 @@
+# AI 知识库配置文件
+
+# Ollama 配置
+ollama:
+  base_url: "http://localhost:11434"
+  model: "qwen3"
+  temperature: 0.5
+  top_p: 0.9
+
+# 嵌入模型配置
+embeddings:
+  model_name: "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+  device: "cpu"
+
+# ChromaDB 配置
+chroma:
+  persist_directory: "/Users/liliuhuan/ai-knowledge-base/scripts/data/chroma_local"
+  collection_name: "knowledge_base"
+
+# 文档处理配置
+document_processing:
+  chunk_size: 1000
+  chunk_overlap: 200
+  separators: ["\n\n", "\n", " ", ""]
+
+# 检索配置
+retrieval:
+  search_type: "similarity"
+  k: 5
+  score_threshold: 0.5
+
+# 日志配置
+logging:
+  level: "INFO"
+  file: "../kb_local.log"

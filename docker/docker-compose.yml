@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # AI 知识库服务
+  knowledge-base:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ai-knowledge-base
+    ports:
+      - "7860:7860"
+    volumes:
+      - ../docs:/app/docs
+      - ../data:/app/data
+      - ../scripts:/app/scripts
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    networks:
+      - kb-network
+
+  # Ollama 服务
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - kb-network
+    # 如果有 NVIDIA GPU，取消注释
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+volumes:
+  ollama-data:
+
+networks:
+  kb-network:
+    driver: bridge
