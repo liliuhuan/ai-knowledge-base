@@ -31,14 +31,22 @@ echo ""
 echo "3. 测试 API 端点连接:"
 if command -v curl &> /dev/null; then
     echo "   测试 Qwen API..."
-    curl -s -o /dev/null -w "   Qwen: HTTP %{http_code}\n" \
-        -H "Authorization: Bearer sk-41eeab43564b4f6bb14686bfedb8b74a" \
-        "https://dashscope.aliyuncs.com/compatible-mode/v1/models" || echo "   Qwen: 连接失败"
+    if [[ -n "$QWEN_API_KEY" ]]; then
+        curl -s -o /dev/null -w "   Qwen: HTTP %{http_code}\n" \
+            -H "Authorization: Bearer $QWEN_API_KEY" \
+            "https://dashscope.aliyuncs.com/compatible-mode/v1/models" || echo "   Qwen: 连接失败"
+    else
+        echo "   Qwen: API Key 未设置，跳过测试"
+    fi
     
     echo "   测试 Groq API..."
-    curl -s -o /dev/null -w "   Groq: HTTP %{http_code}\n" \
-        -H "Authorization: Bearer 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" \
-        "https://api.groq.com/openai/v1/models" || echo "   Groq: 连接失败"
+    if [[ -n "$GROQ_API_KEY" ]]; then
+        curl -s -o /dev/null -w "   Groq: HTTP %{http_code}\n" \
+            -H "Authorization: Bearer $GROQ_API_KEY" \
+            "https://api.groq.com/openai/v1/models" || echo "   Groq: 连接失败"
+    else
+        echo "   Groq: API Key 未设置，跳过测试"
+    fi
 else
     echo "   curl 未安装，跳过连接测试"
 fi

@@ -86,7 +86,7 @@ from open_webui.utils.misc import (
 )
 from open_webui.utils.auth import get_admin_user, get_verified_user
 
-from open_webui.config import (
+from .open_webui.config import (
     ENV,
     RAG_EMBEDDING_MODEL_AUTO_UPDATE,
     RAG_EMBEDDING_MODEL_TRUST_REMOTE_CODE,
@@ -97,7 +97,7 @@ from open_webui.config import (
     RAG_EMBEDDING_CONTENT_PREFIX,
     RAG_EMBEDDING_QUERY_PREFIX,
 )
-from open_webui.env import (
+from .open_webui.env import (
     SRC_LOG_LEVELS,
     DEVICE_TYPE,
     DOCKER,
@@ -107,7 +107,7 @@ from open_webui.env import (
     SENTENCE_TRANSFORMERS_CROSS_ENCODER_MODEL_KWARGS,
 )
 
-from open_webui.constants import ERROR_MESSAGES
+from .open_webui.constants import ERROR_MESSAGES
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["RAG"])
@@ -162,7 +162,7 @@ def get_rf(
 
             except Exception as e:
                 log.error(f"ColBERT: {e}")
-                raise Exception(ERROR_MESSAGES.DEFAULT(e))
+                raise Exception(ERROR_MESSAGES.DEFAULT(str(e)))
         else:
             if engine == "external":
                 try:
@@ -175,7 +175,7 @@ def get_rf(
                     )
                 except Exception as e:
                     log.error(f"ExternalReranking: {e}")
-                    raise Exception(ERROR_MESSAGES.DEFAULT(e))
+                    raise Exception(ERROR_MESSAGES.DEFAULT(str(e)))
             else:
                 import sentence_transformers
 
@@ -415,7 +415,7 @@ async def update_embedding_config(
         log.exception(f"Problem updating embedding model: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=ERROR_MESSAGES.DEFAULT(e),
+            detail=ERROR_MESSAGES.DEFAULT(str(e)),
         )
 
 
@@ -636,7 +636,7 @@ class ConfigForm(BaseModel):
 
     TIKA_SERVER_URL: Optional[str] = None
     DOCLING_SERVER_URL: Optional[str] = None
-    DOCLING_PARAMS: Optional[dict] = None
+    DOCLING_PARAMS: Optional[dict[str, Any]] = None
     DOCLING_DO_OCR: Optional[bool] = None
     DOCLING_FORCE_OCR: Optional[bool] = None
     DOCLING_OCR_ENGINE: Optional[str] = None
@@ -646,8 +646,8 @@ class ConfigForm(BaseModel):
     DOCLING_PIPELINE: Optional[str] = None
     DOCLING_DO_PICTURE_DESCRIPTION: Optional[bool] = None
     DOCLING_PICTURE_DESCRIPTION_MODE: Optional[str] = None
-    DOCLING_PICTURE_DESCRIPTION_LOCAL: Optional[dict] = None
-    DOCLING_PICTURE_DESCRIPTION_API: Optional[dict] = None
+    DOCLING_PICTURE_DESCRIPTION_LOCAL: Optional[dict[str, Any]] = None
+    DOCLING_PICTURE_DESCRIPTION_API: Optional[dict[str, Any]] = None
     DOCUMENT_INTELLIGENCE_ENDPOINT: Optional[str] = None
     DOCUMENT_INTELLIGENCE_KEY: Optional[str] = None
     MISTRAL_OCR_API_KEY: Optional[str] = None
@@ -656,7 +656,7 @@ class ConfigForm(BaseModel):
     MINERU_API_MODE: Optional[str] = None
     MINERU_API_URL: Optional[str] = None
     MINERU_API_KEY: Optional[str] = None
-    MINERU_PARAMS: Optional[dict] = None
+    MINERU_PARAMS: Optional[dict[str, Any]] = None
 
     # Reranking settings
     RAG_RERANKING_MODEL: Optional[str] = None
@@ -985,7 +985,7 @@ async def update_rag_config(
         log.exception(f"Problem updating reranking model: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=ERROR_MESSAGES.DEFAULT(e),
+            detail=ERROR_MESSAGES.DEFAULT(str(e)),
         )
 
     # Chunking settings
@@ -1275,7 +1275,7 @@ def save_docs_to_vector_db(
     request: Request,
     docs,
     collection_name,
-    metadata: Optional[dict] = None,
+    metadata: Optional[dict[str, Any]] = None,
     overwrite: bool = False,
     split: bool = True,
     add: bool = False,
@@ -1703,10 +1703,22 @@ def process_file(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=ERROR_MESSAGES.PANDOC_NOT_INSTALLED,
                 )
+            elif "getCompressedData can't find data descriptor signature" in str(e):
+                # 特殊处理 ePub ZIP 结构错误
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="ePub 文件格式错误。请尝试以下解决方案：\n1. 使用 Calibre 软件验证并修复 ePub 文件\n2. 将文件转换为 PDF 或 DOCX 格式后重新上传\n3. 确保 ePub 文件是从可靠来源获取的",
+                )
+            elif "Pandoc died with exitcode" in str(e) and "during conversion" in str(e):
+                # 处理其他 Pandoc 转换错误
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="文档转换失败。建议将文件转换为 PDF 格式后重新上传，或使用 Calibre 等工具修复原始文件。",
+                )
             else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=str(e),
+                    detail=f"文件处理失败: {str(e)}",
                 )
 
     else:
@@ -1796,7 +1808,7 @@ def process_web(
         log.exception(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=ERROR_MESSAGES.DEFAULT(e),
+            detail=ERROR_MESSAGES.DEFAULT(str(e)),
         )
 
 

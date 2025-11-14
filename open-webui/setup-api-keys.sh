@@ -63,10 +63,10 @@ CURRENT_CONFIG=$(curl -s -X GET "$WEBUI_URL/openai/config" \
 
 echo "当前配置: $CURRENT_CONFIG"
 
-# 准备新的配置
-OPENAI_API_BASE_URLS='["https://dashscope.aliyuncs.com/compatible-mode/v1","https://api.groq.com/openai/v1"]'
-OPENAI_API_KEYS='["sk-41eeab43564b4f6bb14686bfedb8b74a","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"]'
-OPENAI_API_CONFIGS='{"0":{"enable":true,"name":"Qwen"},"1":{"enable":true,"name":"Groq"}}'
+# 准备新的配置 - 只保留免费选项
+OPENAI_API_BASE_URLS='[]'
+OPENAI_API_KEYS='[]'
+OPENAI_API_CONFIGS='{}'
 
 # 更新配置
 echo ""
@@ -103,8 +103,7 @@ echo -e "${GREEN}配置完成！${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 echo "已配置的连接:"
-echo "  1. Qwen - https://dashscope.aliyuncs.com/compatible-mode/v1"
-echo "  2. Groq - https://api.groq.com/openai/v1"
+echo "  1. Groq - https://api.groq.com/openai/v1"
 echo ""
 echo "现在您可以在 Web UI 中看到这些模型的列表了！"
 echo "访问: $WEBUI_URL"

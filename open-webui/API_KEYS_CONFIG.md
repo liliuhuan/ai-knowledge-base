@@ -9,11 +9,12 @@
 ### 已配置的 API Keys
 
 1. **Qwen (阿里云 DashScope)**
-   - API Key: `sk-41eeab43564b4f6bb14686bfedb8b74a`
-   - API Base URL: `https://dashscope.aliyuncs.com/compatible-mode/v1`
 
+   - API Key: `YOUR_QWEN_API_KEY` (请替换为您的实际 API Key)
+   - API Base URL: `https://dashscope.aliyuncs.com/compatible-mode/v1`
 2. **Groq**
-   - API Key: `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`
+
+   - API Key: `YOUR_GROQ_API_KEY` (请替换为您的实际 API Key)
    - API Base URL: `https://api.groq.com/openai/v1`
 
 ## 使用方法
@@ -48,7 +49,7 @@
 
 ```bash
 # Qwen 和 Groq API Keys (用分号分隔)
-OPENAI_API_KEYS=sk-41eeab43564b4f6bb14686bfedb8b74a;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
+OPENAI_API_KEYS=YOUR_QWEN_API_KEY;YOUR_GROQ_API_KEY
 
 # API Base URLs (用分号分隔，顺序要与 API Keys 对应)
 OPENAI_API_BASE_URLS=https://dashscope.aliyuncs.com/compatible-mode/v1;https://api.groq.com/openai/v1
@@ -77,6 +78,7 @@ ENABLE_OPENAI_API=True
 ## 验证配置
 
 启动服务后，在 Web UI 中：
+
 1. 进入聊天界面
 2. 点击模型选择器
 3. 您应该能看到 Qwen 和 Groq 的模型列表
@@ -87,4 +89,3 @@ ENABLE_OPENAI_API=True
 - 多个值使用分号（`;`）分隔
 - 确保 API Keys 有效且有足够的配额
 - 建议在生产环境中使用 `.env` 文件或环境变量来管理敏感信息
-

@@ -49,9 +49,9 @@ log_error() {
 show_banner() {
     echo -e "${BLUE}"
     echo "╔══════════════════════════════════════════════════════════════╗"
-    echo "║                    Open WebUI 启动器                        ║"
+    echo "║                    Open WebUI 启动器                          ║"
     echo "║                                                              ║"
-    echo "║  智能启动 Open WebUI 服务并自动打开浏览器                   ║"
+    echo "║  智能启动 Open WebUI 服务并自动打开浏览器                         ║"
     echo "╚══════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
 }
@@ -72,13 +72,22 @@ load_config() {
     
     # 配置 API Keys (如果没有在 .env 中设置)
     if [[ -z "$OPENAI_API_KEYS" ]]; then
+        # 从环境变量或使用占位符
+        QWEN_KEY=${QWEN_API_KEY:-"YOUR_QWEN_API_KEY"}
+        GROQ_KEY=${GROQ_API_KEY:-"YOUR_GROQ_API_KEY"}
+        
         # Qwen API Key 和 Groq API Key (用分号分隔)
-        export OPENAI_API_KEYS="sk-41eeab43564b4f6bb14686bfedb8b74a;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"
+        export OPENAI_API_KEYS="${QWEN_KEY};${GROQ_KEY}"
         # Qwen API Base URL 和 Groq API Base URL (用分号分隔)
         export OPENAI_API_BASE_URLS="https://dashscope.aliyuncs.com/compatible-mode/v1;https://api.groq.com/openai/v1"
         # 启用 OpenAI API
         export ENABLE_OPENAI_API=${ENABLE_OPENAI_API:-True}
-        log_info "已配置 Qwen 和 Groq API Keys"
+        
+        if [[ "$QWEN_KEY" != "YOUR_QWEN_API_KEY" ]] || [[ "$GROQ_KEY" != "YOUR_GROQ_API_KEY" ]]; then
+            log_info "已配置 Qwen 和 Groq API Keys"
+        else
+            log_info "请设置 QWEN_API_KEY 和 GROQ_API_KEY 环境变量，或通过 Web UI 配置"
+        fi
     fi
     
     log_info "配置加载完成: 端口=$PORT, 主机=$HOST"
