@@ -61,7 +61,27 @@ load_config() {
     # 从环境变量或配置文件加载设置
     if [[ -f ".env" ]]; then
         log_info "加载配置文件: .env"
-        source .env
+        # 使用 set -a 自动导出所有变量，并安全地加载 .env 文件
+        set -a
+        # 逐行读取 .env 文件，处理包含特殊字符的值
+        while IFS= read -r line || [ -n "$line" ]; do
+            # 跳过注释和空行
+            [[ "$line" =~ ^[[:space:]]*# ]] && continue
+            [[ -z "${line// }" ]] && continue
+            # 如果行包含 =，则导出变量
+            if [[ "$line" =~ ^[[:space:]]*([^=]+)=(.*)$ ]]; then
+                local key="${BASH_REMATCH[1]// /}"
+                local value="${BASH_REMATCH[2]}"
+                # 移除值首尾的引号（如果存在）
+                value="${value#\"}"
+                value="${value%\"}"
+                value="${value#\'}"
+                value="${value%\'}"
+                # 导出变量
+                export "$key=$value"
+            fi
+        done < .env
+        set +a
     fi
     
     # 设置默认值
@@ -69,6 +89,18 @@ load_config() {
     export HOST=${HOST:-${OPENWEBUI_HOST:-$DEFAULT_HOST}}
     export AUTO_OPEN_BROWSER=${AUTO_OPEN_BROWSER:-true}
     export LOG_LEVEL=${LOG_LEVEL:-INFO}
+    
+    # 配置 Ollama（支持本地和云模型）
+    if [[ -z "$OLLAMA_BASE_URLS" ]]; then
+        # 默认连接到本地 Ollama
+        export OLLAMA_BASE_URLS=${OLLAMA_BASE_URL:-"http://localhost:11434"}
+        
+        # 如果设置了 Ollama 云 API Key，添加云服务器
+        if [[ -n "$OLLAMA_API_KEY" ]]; then
+            export OLLAMA_BASE_URLS="${OLLAMA_BASE_URLS};https://ollama.com"
+            log_info "已配置 Ollama 云模型支持（需要 API Key）"
+        fi
+    fi
     
     # 配置 API Keys (如果没有在 .env 中设置)
     if [[ -z "$OPENAI_API_KEYS" ]]; then
@@ -91,6 +123,7 @@ load_config() {
     fi
     
     log_info "配置加载完成: 端口=$PORT, 主机=$HOST"
+    log_info "Ollama 服务器: $OLLAMA_BASE_URLS"
 }
 
 # 创建必要目录
@@ -261,6 +294,10 @@ start_service() {
     [[ -n "$OPENAI_API_KEYS" ]] && export OPENAI_API_KEYS
     [[ -n "$OPENAI_API_BASE_URLS" ]] && export OPENAI_API_BASE_URLS
     [[ -n "$ENABLE_OPENAI_API" ]] && export ENABLE_OPENAI_API
+    # 导出 Ollama 配置 (如果已设置)
+    [[ -n "$OLLAMA_BASE_URL" ]] && export OLLAMA_BASE_URL
+    [[ -n "$OLLAMA_BASE_URLS" ]] && export OLLAMA_BASE_URLS
+    [[ -n "$OLLAMA_API_KEY" ]] && export OLLAMA_API_KEY
     
     # 启动服务
     nohup open-webui serve \

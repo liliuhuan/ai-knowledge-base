@@ -1,6 +1,12 @@
 # API Keys 配置说明
 
-已为您配置了 Qwen 和 Groq 的 API Keys。
+本文档说明如何配置 Open WebUI 中的各种 API Keys 和连接。
+
+## 已配置的服务
+
+- Qwen (阿里云 DashScope)
+- Groq
+- Ollama（支持本地和云模型）
 
 ## 配置方式
 
@@ -83,9 +89,45 @@ ENABLE_OPENAI_API=True
 2. 点击模型选择器
 3. 您应该能看到 Qwen 和 Groq 的模型列表
 
+## Ollama 云模型配置
+
+Open WebUI 支持配置 Ollama 云大模型。详细配置说明请参考 [OLLAMA_CLOUD_CONFIG.md](./OLLAMA_CLOUD_CONFIG.md)。
+
+### 快速配置
+
+#### 方式一：通过本地 Ollama CLI（推荐）
+
+1. 登录 Ollama 账户：
+   ```bash
+   ollama signin
+   ```
+
+2. 拉取云模型：
+   ```bash
+   ollama pull gpt-oss:120b-cloud
+   ```
+
+3. Open WebUI 会自动连接到本地 Ollama，云模型会自动可用。
+
+#### 方式二：直接连接 Ollama 云 API
+
+1. 在 [ollama.com/settings/keys](https://ollama.com/settings/keys) 创建 API Key
+
+2. 通过环境变量配置：
+   ```bash
+   # 在 .env 文件中
+   OLLAMA_BASE_URLS=http://localhost:11434;https://ollama.com
+   OLLAMA_API_KEY=your_ollama_api_key
+   ```
+
+3. 或通过 Web UI 配置：
+   - 设置 → Connections → Ollama
+   - 添加新连接：Base URL = `https://ollama.com`，API Key = 你的 API Key
+
 ## 注意事项
 
 - API Keys 和 Base URLs 的索引必须对应
 - 多个值使用分号（`;`）分隔
 - 确保 API Keys 有效且有足够的配额
 - 建议在生产环境中使用 `.env` 文件或环境变量来管理敏感信息
+- Ollama 云模型需要网络连接，请确保网络畅通
